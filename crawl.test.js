@@ -1,5 +1,5 @@
 const { test, expect } = require('@jest/globals')
-const { normalizeURL } = require('./crawl.js')
+const { normalizeURL, getURLsFromHTML } = require('./crawl.js')
 
 const url1 = "https://blog.boot.dev/path/"
 const url2 = "https://blog.boot.dev/path"
