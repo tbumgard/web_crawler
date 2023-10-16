@@ -268,7 +268,6 @@ function normalizeURL(url){
 async function getURLsFromHTML(htmlBody, baseUrl){
     const dom = new JSDOM(htmlBody)
     const listUrls = dom.window._document.querySelectorAll('a')
-    console.log(htmlBody)
     const extractedUrls = []
     const string = ""
 
@@ -281,7 +280,7 @@ async function getURLsFromHTML(htmlBody, baseUrl){
         }
     }
     for (let extractedURL of extractedUrls){
-        //console.log(extractedURL)
+        console.log(extractedURL)
     }
     return extractedUrls
 }
@@ -291,10 +290,10 @@ async function crawlPage(baseUrl, currentUrl, pages){
     const currentUrlObj = new URL(currentUrl)
     const baseUrlObj = new URL(baseUrl)
     if (currentUrlObj.hostname != baseUrlObj.hostname){
-        //console.log("url's hostname doesn't match baseUrl")
-        //console.log(`url: ${currentUrlObj}`)
-        //console.log(`url's hostname: ${currentUrlObj.hostname}`)
-        //console.log(`baseUrl: ${baseUrlObj.hostname}`)
+        console.log("url's hostname doesn't match baseUrl")
+        console.log(`url: ${currentUrlObj}`)
+        console.log(`url's hostname: ${currentUrlObj.hostname}`)
+        console.log(`baseUrl: ${baseUrlObj.hostname}`)
         return pages
     }
     
@@ -325,14 +324,14 @@ async function crawlPage(baseUrl, currentUrl, pages){
         })
 
         if (!response.headers.get('Content-Type').includes('text/html')){
-            //console.log("Error occured while trying to convert and display HTML text from stream")
-            //console.log(`The content-type is not HTML but rather ${response.headers.get('Content-Type')}`)
+            console.log("Error occured while trying to convert and display HTML text from stream")
+            console.log(`The content-type is not HTML but rather ${response.headers.get('Content-Type')}`)
             return pages
         }
 
         try{
             const html = await response.text()
-            //console.log(html)
+            console.log(html)
     //6. Assuming all went well with the fetch request, get all the URLs from the response body HTML
             const extractedURLs = await getURLsFromHTML(html, baseUrl)
 
@@ -347,12 +346,12 @@ async function crawlPage(baseUrl, currentUrl, pages){
     //8. Finally, return the updated pages object
             return pages
         } catch (err) {   
-            //console.log("Error occured while trying to convert and display HTML text from stream")
-            //console.log(err)
+            console.log("Error occured while trying to convert and display HTML text from stream")
+            console.log(err)
         }
     } catch (err) {
-        //console.log("Error occured while trying to fetch baseURL")
-        //console.log(err)
+        console.log("Error occured while trying to fetch baseURL")
+        console.log(err)
     }
 
     
