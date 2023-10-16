@@ -283,9 +283,82 @@ async function getURLsFromHTML(htmlBody, baseUrl){
     for (let extractedURL of extractedUrls){
         console.log(extractedURL)
     }
+    return extractedUrls
+}
+
+async function crawlPage(baseUrl, currentUrl, pages){   
+    //1. Make sure the currentURL is on the same domain as the baseURL. If it's not, just return the current pages. We don't want to crawl the entire internet, just the domain in question.
+    const currentUrlObj = new URL(currentUrl)
+    const baseUrlObj = new URL(baseUrl)
+    if (currentUrlObj.hostname != baseUrlObj.hostname){
+        console.log("url's hostname doesn't match baseUrl")
+        console.log(`url: ${currentUrlObj}`)
+        console.log(`url's hostname: ${currentUrlObj.hostname}`)
+        console.log(`baseUrl: ${baseUrlObj.hostname}`)
+        return pages
+    }
+    
+    //2. Get a normalized version of the currentURL.
+    const normalizedCurrentUrl = normalizeURL(currentUrl)
+
+    //3. If the pages object already has an entry for the normalized version of the current URL, just increment the count and return the current pages.
+    if (pages[normalizedCurrentUrl]){
+        pages[normalizedCurrentUrl]++
+        return pages
+    } else {
+    //4. Otherwise, add an entry to the pages object for the normalized version of the current URL, and set the count to 1 as long as the current url isn't the base url (the first page we're crawling). Set it to 0 if it is the base url.        
+        if (normalizedCurrentUrl == baseUrlObj.hostname){
+            pages[normalizedCurrentUrl] = 0
+        } else {
+            pages[normalizedCurrentUrl] = 1
+        }            
+    }
+
+    //5. If we've gotten here, we haven't yet made a request to the current URL, so let's do that, and maybe add a console.log so you can watch your crawler go in real-time.
+    try{
+        const response = await fetch(currentUrl, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {  
+                'Content-Type': 'text/html'
+            }
+        })
+
+        if (!response.headers.get('Content-Type').includes('text/html')){
+            console.log("Error occured while trying to convert and display HTML text from stream")
+            console.log(`The content-type is not HTML but rather ${response.headers.get('Content-Type')}`)
+            return pages
+        }
+
+        try{
+            const html = await response.text()
+            console.log(html)
+    //6. Assuming all went well with the fetch request, get all the URLs from the response body HTML
+            const extractedURLs = await getURLsFromHTML(html, baseUrl)
+
+    //7. Recursively crawl each URL you found on the page and update the pages to keep an aggregate count
+            for (let eachUrl of extractedURLs){
+                const normalizeEachUrl = normalizeURL(eachUrl)
+                if (normalizeEachUrl != baseUrlObj.hostname){
+                    pages = await crawlPage(baseUrl, eachUrl, pages)
+                }
+            }
+
+    //8. Finally, return the updated pages object
+            return pages
+        } catch (err) {   
+            console.log("Error occured while trying to convert and display HTML text from stream")
+            console.log(err)
+        }
+    } catch (err) {
+        console.log("Error occured while trying to fetch baseURL")
+        console.log(err)
+    }
+
+    
 }
 
 module.exports = {
-    normalizeURL, getURLsFromHTML
+    normalizeURL, getURLsFromHTML, crawlPage
 }
 
